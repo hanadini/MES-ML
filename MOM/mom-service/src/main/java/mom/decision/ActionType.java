@@ -1,0 +1,11 @@
+package mom.decision;
+
+public enum ActionType {
+    LOG_ONLY,
+    CREATE_EVENT,
+    CREATE_QUALITY_TASK,
+    NOTIFY_SHIFT_LEAD,
+    REQUEST_SUPERVISOR_APPROVAL,
+    ACTIVATE_INTERVENTION,
+    FALLBACK_RULE_ALERT
+}

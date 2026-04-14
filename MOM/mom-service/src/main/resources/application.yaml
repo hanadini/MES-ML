@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/momdb
+    username: mom
+    password: mom
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+
+ml:
+  base-url: http://localhost:8001
+  timeout-ms: 800
+
+springdoc:
+  swagger-ui:
+    path: /swagger
