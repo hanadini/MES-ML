@@ -1,0 +1,10 @@
+{
+  "model_name": "labBendingAvg_rf_v1",
+  "target_name": "labBendingAvg",
+  "algorithm": "rf",
+  "feature_count": 28,
+  "training_timestamp": "2026-04-09T10:12:49.196342Z",
+  "notes": "MDF1 baseline RF model with engineered features",
+  "pipeline_type": "single_target_regression",
+  "split_type": "time_based"
+}
