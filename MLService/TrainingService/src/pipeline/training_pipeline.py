@@ -10,6 +10,7 @@ from data.splitter import split_train_val_test, split_time_based
 from models.registry import get_regression_model
 from models.artifact_saver import save_full_artifact_bundle
 from models.train import extract_feature_importance
+from models.xgb_tuner import tune_xgb_regressor
 from utils.logging_utils import get_logger
 from features.selectors import select_top_correlated_features
 
@@ -23,6 +24,12 @@ class TrainingPipelineResult:
     target_name: str
     metrics: dict
     artifact_dir: str
+
+    # Ensemble support
+    y_val_true: pd.Series | None
+    y_val_pred: pd.Series | None
+    y_test_true: pd.Series
+    y_test_pred: pd.Series
 
 
 def _build_regression_metrics(y_true: pd.Series, y_pred) -> dict[str, float]:
@@ -117,30 +124,64 @@ def run_single_target_regression_pipeline(
     model = get_regression_model(model_name=algorithm_name, model_params=model_params)
 
     algo = algorithm_name.lower()
+    tuning_info = {}
 
     if algo in {"xgb", "xgboost"}:
+        best_params, best_val_metrics = tune_xgb_regressor(
+            X_train=X_train,
+            y_train=y_train,
+            X_val=X_val,
+            y_val=y_val,
+            n_iter=25,
+            random_state=random_state,
+            early_stopping_rounds=30,
+        )
+
+        model = get_regression_model(model_name=algorithm_name, model_params=best_params)
+
         imputer = model.named_steps["imputer"]
         xgb_model = model.named_steps["model"]
 
-        imputer.fit(X_train)
-        # Fit imputer on training data
-        X_train_imp = imputer.fit_transform(X_train)
-        X_val_imp = imputer.transform(X_val)
+        # Final training on train + validation
+        X_train_full = pd.concat([X_train, X_val], axis=0)
+        y_train_full = pd.concat([y_train, y_val], axis=0)
 
+        X_train_full_imp = imputer.fit_transform(X_train_full)
+        X_val_imp = imputer.transform(X_val)
+        X_test_imp = imputer.transform(X_test)
+
+        # IMPORTANT:
+        # Do NOT use early stopping on the test set here.
+        # already used early stopping during tuning on validation.
         xgb_model.fit(
-            X_train_imp,
-            y_train,
-            eval_set=[(X_val_imp, y_val)],
+            X_train_full_imp,
+            y_train_full,
             verbose=False,
         )
-        # Re-wrap trained model back into pipeline
+
         model.named_steps["model"] = xgb_model
+
+        tuning_info = {
+            "tuned": True,
+            "best_params": best_params,
+            "best_validation_metrics_during_tuning": best_val_metrics,
+            "tuning_iterations": 25,
+            "early_stopping_rounds": 30,
+        }
+
+        y_val_pred = pd.Series(
+            model.named_steps["model"].predict(X_val_imp),
+            index=y_val.index,
+        )
+        y_test_pred = pd.Series(
+            model.named_steps["model"].predict(X_test_imp),
+            index=y_test.index,
+        )
 
     elif algo in {"lgbm", "lightgbm"}:
         imputer = model.named_steps["imputer"]
         lgbm_model = model.named_steps["model"]
 
-        imputer.fit(X_train)
         X_train_imp = imputer.fit_transform(X_train)
         X_val_imp = imputer.transform(X_val)
 
@@ -152,28 +193,45 @@ def run_single_target_regression_pipeline(
         )
 
         model.named_steps["model"] = lgbm_model
+
+        y_val_pred = pd.Series(model.predict(X_val), index=y_val.index)
+        y_test_pred = pd.Series(model.predict(X_test), index=y_test.index)
+
     else:
         model.fit(X_train, y_train)
-
-    y_val_pred = model.predict(X_val)
-    y_test_pred = model.predict(X_test)
+        y_val_pred = pd.Series(model.predict(X_val), index=y_val.index)
+        y_test_pred = pd.Series(model.predict(X_test), index=y_test.index)
 
     if hasattr(model, "named_steps") and "model" in model.named_steps:
         model.named_steps["feature_names_"] = selected_feature_columns
 
-
-    metrics = {
-        "validation": _build_regression_metrics(y_val, y_val_pred),
-        "test": _build_regression_metrics(y_test, y_test_pred),
-        "row_counts": {
-            "train": len(split_result.train_df),
-            "val": len(split_result.val_df),
-            "test": len(split_result.test_df),
-        },
-        "split_type": "time_based" if use_time_based_split else "random",
-        "selected_feature_count": len(selected_feature_columns),
-        "selected_features": selected_feature_columns,
-    }
+    if algo in {"xgb", "xgboost"}:
+        metrics = {
+            "validation": tuning_info["best_validation_metrics_during_tuning"],
+            "test": _build_regression_metrics(y_test, y_test_pred),
+            "row_counts": {
+                "train": len(split_result.train_df),
+                "val": len(split_result.val_df),
+                "test": len(split_result.test_df),
+            },
+            "split_type": "time_based" if use_time_based_split else "random",
+            "selected_feature_count": len(selected_feature_columns),
+            "selected_features": selected_feature_columns,
+            "tuning": tuning_info,
+        }
+    else:
+        metrics = {
+            "validation": _build_regression_metrics(y_val, y_val_pred),
+            "test": _build_regression_metrics(y_test, y_test_pred),
+            "row_counts": {
+                "train": len(split_result.train_df),
+                "val": len(split_result.val_df),
+                "test": len(split_result.test_df),
+            },
+            "split_type": "time_based" if use_time_based_split else "random",
+            "selected_feature_count": len(selected_feature_columns),
+            "selected_features": selected_feature_columns,
+        }
 
     feature_importance_df = None
     if algorithm_name.lower() in {
@@ -185,7 +243,6 @@ def run_single_target_regression_pipeline(
             feature_importance_df = extract_feature_importance(model, selected_feature_columns)
         except Exception as exc:
             logger.warning("Feature importance extraction skipped: %s", exc)
-
 
     artifact_dir = save_full_artifact_bundle(
         artifacts_root=artifacts_root,
@@ -217,4 +274,8 @@ def run_single_target_regression_pipeline(
         target_name=target_column,
         metrics=metrics,
         artifact_dir=str(artifact_dir),
+        y_val_true=y_val,
+        y_val_pred=y_val_pred,
+        y_test_true=y_test,
+        y_test_pred=y_test_pred,
     )

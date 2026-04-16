@@ -1,0 +1,10 @@
+{
+  "model_name": "labDensityAverage_lgbm_v1",
+  "target_name": "labDensityAverage",
+  "algorithm": "lgbm",
+  "feature_count": 28,
+  "training_timestamp": "2026-04-15T13:34:48.550997Z",
+  "notes": "MDF1 LightGBM model with engineered features",
+  "pipeline_type": "single_target_regression",
+  "split_type": "time_based"
+}

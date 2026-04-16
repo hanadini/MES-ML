@@ -1,0 +1,32 @@
+{
+  "labDensityAverage": {
+    "target_name": "labDensityAverage",
+    "algorithm_name": "xgb",
+    "artifact_model_name": "labDensityAverage_xgb_tuned_v2",
+    "artifact_dir": "artifacts\\labDensityAverage_xgb_tuned_v2",
+    "test_r2": 0.705097735699268,
+    "test_rmse": 38.49421505179929,
+    "test_mae": 23.554922146267362,
+    "validation_r2": 0.8030740866692822,
+    "type": "single_model"
+  },
+  "labBendingAvg": {
+    "target_name": "labBendingAvg",
+    "algorithm_name": "ensemble_xgb_rf",
+    "artifact_model_name": "labBendingAvg_ensemble_xgb_rf_v1",
+    "artifact_dir": "artifacts\\labBendingAvg_xgb_tuned_v2",
+    "test_r2": 0.6934680039208848,
+    "test_rmse": 4.918058209687532,
+    "test_mae": 3.2596680592876432,
+    "validation_r2": 0.8241048110753492,
+    "type": "weighted_ensemble",
+    "members": {
+      "xgb": "labBendingAvg_xgb_tuned_v2",
+      "rf": "labBendingAvg_rf_v2"
+    },
+    "weights": {
+      "xgb": 0.55,
+      "rf": 0.44999999999999996
+    }
+  }
+}
