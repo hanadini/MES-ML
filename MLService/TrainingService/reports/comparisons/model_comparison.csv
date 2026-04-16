@@ -1,8 +1,0 @@
-﻿target_name,algorithm_name,artifact_model_name,artifact_dir,validation_mae,validation_rmse,validation_r2,test_mae,test_rmse,test_r2,train_rows,val_rows,test_rows,split_type
-labDensityAverage,rf,labDensityAverage_rf_v2,artifacts\labDensityAverage_rf_v2,21.363962469683152,33.61927823914431,0.7726980804970788,24.765425267033624,39.43391952055816,0.6905239377840976,342,72,72,time_based
-labDensityAverage,xgb,labDensityAverage_xgb_tuned_v2,artifacts\labDensityAverage_xgb_tuned_v2,19.436699863009984,31.292356408125283,0.8030740866692822,23.554922146267362,38.49421505179929,0.705097735699268,342,72,72,time_based
-labDensityAverage,lgbm,labDensityAverage_lgbm_v1,artifacts\labDensityAverage_lgbm_v1,22.15821504018116,32.90893799758461,0.7822019098601232,26.140273439084776,39.73768918681774,0.6857376253515453,342,72,72,time_based
-labBendingAvg,rf,labBendingAvg_rf_v2,artifacts\labBendingAvg_rf_v2,2.8143941792220164,4.161821718503142,0.7728907429948726,3.2692169077571287,4.927750838433704,0.6922585718772141,342,72,72,time_based
-labBendingAvg,xgb,labBendingAvg_xgb_tuned_v2,artifacts\labBendingAvg_xgb_tuned_v2,2.4869031026628283,3.879978332168472,0.8026093884565267,3.309663462109036,4.958204187540939,0.6884431534278955,342,72,72,time_based
-labBendingAvg,lgbm,labBendingAvg_lgbm_v1,artifacts\labBendingAvg_lgbm_v1,2.7606374544403507,4.125291522448156,0.7768601274852737,3.447338779435372,5.087685963475905,0.6719582823040453,342,72,72,time_based
-labBendingAvg,ensemble_xgb_rf,labBendingAvg_ensemble_xgb_rf_v1,artifacts\labBendingAvg_xgb_tuned_v2,2.0852134035185386,3.6626298826888317,0.8241048110753492,3.2596680592876432,4.918058209687532,0.6934680039208848,342,72,72,time_based
