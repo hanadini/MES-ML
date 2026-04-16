@@ -1,0 +1,22 @@
+{
+  "labDensityAverage": {
+    "target_name": "labDensityAverage",
+    "algorithm_name": "rf",
+    "artifact_model_name": "labDensityAverage_rf_v2",
+    "artifact_dir": "artifacts\\labDensityAverage_rf_v2",
+    "test_r2": 0.6905239377840975,
+    "test_rmse": 39.43391952055816,
+    "test_mae": 24.765425267033624,
+    "validation_r2": 0.7726980804970786
+  },
+  "labBendingAvg": {
+    "target_name": "labBendingAvg",
+    "algorithm_name": "rf",
+    "artifact_model_name": "labBendingAvg_rf_v2",
+    "artifact_dir": "artifacts\\labBendingAvg_rf_v2",
+    "test_r2": 0.6922585718772138,
+    "test_rmse": 4.927750838433705,
+    "test_mae": 3.269216907757129,
+    "validation_r2": 0.7728907429948726
+  }
+}

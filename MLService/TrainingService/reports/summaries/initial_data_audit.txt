@@ -1,0 +1,57 @@
+MDF1 INITIAL DATA AUDIT
+============================================================
+Rows: 486
+Columns: 1190
+
+Time column: baseProductionDate
+Min time: 2025-08-01 00:00:00
+Max time: 2026-03-29 21:29:29
+
+Primary targets summary:
+  Target: labDensityAverage
+    Non-null count: 486
+    Mean: 755.7128
+    Std: 60.5974
+    Min: 644.3000
+    Max: 916.5300
+
+  Target: labBendingAvg
+    Non-null count: 486
+    Mean: 34.4327
+    Std: 7.7926
+    Min: 23.9600
+    Max: 57.3600
+
+Top 15 absolute correlations with target: labDensityAverage
+  - pressPressure1C: 0.8626
+  - pressPressure14R: 0.8479
+  - pressPressure1R: 0.8431
+  - pressPressure1L: 0.8403
+  - pressPressure13C: 0.8225
+  - pressPressure11C: 0.8196
+  - pressPressure15L: 0.8180
+  - pressPressure15R: 0.8173
+  - pressPressure21R: 0.8153
+  - pressPressure21L: 0.8152
+  - pressPressure14C: 0.8070
+  - pressPressure11L: 0.8014
+  - pressPressure11R: 0.8012
+  - pressPressure12C: 0.7999
+  - operPressSpeed: 0.7956
+
+Top 15 absolute correlations with target: labBendingAvg
+  - operPressSpeed: 0.8455
+  - pressPressure13C: 0.8312
+  - pressPressure11C: 0.8219
+  - pressPressure11R: 0.8111
+  - pressPressure11L: 0.8111
+  - pressPressure12C: 0.8074
+  - pressPressure14C: 0.7974
+  - pressPressure1C: 0.7850
+  - pressPressure14R: 0.7835
+  - beltSpeed1: 0.7828
+  - pressPressure12L: 0.7823
+  - pressPressure10C: 0.7719
+  - pressPressure1R: 0.7643
+  - pressPressure10L: 0.7608
+  - pressPressure10R: 0.7514
