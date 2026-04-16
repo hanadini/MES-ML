@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, List, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import joblib
 
@@ -51,9 +51,7 @@ def load_best_models_registry() -> Dict[str, Dict[str, Any]]:
     registry_path = ARTIFACTS_DIR / "best_models_registry.json"
 
     if not registry_path.exists():
-        raise FileNotFoundError(
-            f"Best model registry not found: {registry_path}"
-        )
+        raise FileNotFoundError(f"Best model registry not found: {registry_path}")
 
     registry = _read_json(registry_path)
 
@@ -75,15 +73,16 @@ def get_registered_target_map() -> Dict[str, str]:
     }
 
 
-def resolve_model_name_for_target(target_name: str) -> str:
+def get_target_serving_config(target_name: str) -> Dict[str, Any]:
     registry = load_best_models_registry()
+    normalized_target = target_name.strip()
 
-    if target_name not in registry:
+    if normalized_target not in registry:
         raise ValueError(
             f"Unsupported target '{target_name}'. Supported targets: {sorted(registry.keys())}"
         )
 
-    return registry[target_name]["artifact_model_name"]
+    return registry[normalized_target]
 
 
 def load_model_bundle(model_name: str) -> LoadedModelBundle:
@@ -144,6 +143,12 @@ def load_model_bundle(model_name: str) -> LoadedModelBundle:
 
 
 def load_model_bundle_for_target(target_name: str) -> LoadedModelBundle:
-    normalized_target = target_name.strip()
-    model_name = resolve_model_name_for_target(normalized_target)
-    return load_model_bundle(model_name)
+    config = get_target_serving_config(target_name)
+
+    if config.get("type", "single_model") != "single_model":
+        raise ValueError(
+            f"Target '{target_name}' is not a single-model target. "
+            f"Use its serving config to resolve ensemble members."
+        )
+
+    return load_model_bundle(config["artifact_model_name"])

@@ -1,13 +1,13 @@
 {
   "validation": {
-    "mae": 2.8143941792220164,
-    "rmse": 4.161821718503142,
-    "r2": 0.7728907429948726
+    "mae": 2.4869031026628283,
+    "rmse": 3.879978332168472,
+    "r2": 0.8026093884565267
   },
   "test": {
-    "mae": 3.2692169077571287,
-    "rmse": 4.927750838433704,
-    "r2": 0.6922585718772141
+    "mae": 3.309663462109036,
+    "rmse": 4.958204187540939,
+    "r2": 0.6884431534278955
   },
   "row_counts": {
     "train": 342,
@@ -45,5 +45,26 @@
     "thicknessClosed_range",
     "pressPressureLR_mean_diff",
     "thicknessClosed_min"
-  ]
+  ],
+  "tuning": {
+    "tuned": true,
+    "best_params": {
+      "subsample": 1.0,
+      "reg_lambda": 10.0,
+      "reg_alpha": 0.0,
+      "n_estimators": 188,
+      "min_child_weight": 3,
+      "max_depth": 6,
+      "learning_rate": 0.08,
+      "gamma": 0.3,
+      "colsample_bytree": 1.0
+    },
+    "best_validation_metrics_during_tuning": {
+      "mae": 2.4869031026628283,
+      "rmse": 3.879978332168472,
+      "r2": 0.8026093884565267
+    },
+    "tuning_iterations": 25,
+    "early_stopping_rounds": 30
+  }
 }

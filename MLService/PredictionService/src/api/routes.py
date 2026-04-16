@@ -12,9 +12,10 @@ from schemas.response_schema import (
 from service.model_loader import (
     load_best_models_registry,
     get_registered_target_map,
+    get_target_serving_config,
     load_model_bundle_for_target,
 )
-from service.predictor import predict_single
+from service.predictor import predict_single_model, predict_weighted_ensemble
 
 router = APIRouter()
 
@@ -28,10 +29,7 @@ def health() -> dict:
 def list_models() -> dict:
     try:
         model_dirs = sorted(
-            [
-                p.name for p in ARTIFACTS_DIR.iterdir()
-                if p.is_dir()
-            ]
+            [p.name for p in ARTIFACTS_DIR.iterdir() if p.is_dir()]
         )
 
         registry = load_best_models_registry()
@@ -51,13 +49,30 @@ def list_models() -> dict:
 def predict(request: PredictionRequest) -> PredictionResponse:
     try:
         target_name = request.target.strip()
-        bundle = load_model_bundle_for_target(target_name)
+        serving_config = get_target_serving_config(target_name)
 
-        result = predict_single(
-            bundle=bundle,
-            incoming_features=request.features,
-            target=target_name,
-        )
+        serving_type = serving_config.get("type", "single_model")
+
+        if serving_type == "single_model":
+            bundle = load_model_bundle_for_target(target_name)
+            result = predict_single_model(
+                bundle=bundle,
+                incoming_features=request.features,
+                target=target_name,
+            )
+
+        elif serving_type == "weighted_ensemble":
+            result = predict_weighted_ensemble(
+                target=target_name,
+                incoming_features=request.features,
+                members=serving_config["members"],
+                weights=serving_config["weights"],
+            )
+
+        else:
+            raise ValueError(
+                f"Unsupported serving type '{serving_type}' for target '{target_name}'"
+            )
 
         return PredictionResponse(**result)
 
@@ -80,14 +95,29 @@ def predict_all(request: PredictAllRequest) -> PredictAllResponse:
         used_feature_count_by_target = {}
         missing_features_by_target = {}
 
-        for target_name in registry.keys():
-            bundle = load_model_bundle_for_target(target_name)
+        for target_name, serving_config in registry.items():
+            serving_type = serving_config.get("type", "single_model")
 
-            result = predict_single(
-                bundle=bundle,
-                incoming_features=request.features,
-                target=target_name,
-            )
+            if serving_type == "single_model":
+                bundle = load_model_bundle_for_target(target_name)
+                result = predict_single_model(
+                    bundle=bundle,
+                    incoming_features=request.features,
+                    target=target_name,
+                )
+
+            elif serving_type == "weighted_ensemble":
+                result = predict_weighted_ensemble(
+                    target=target_name,
+                    incoming_features=request.features,
+                    members=serving_config["members"],
+                    weights=serving_config["weights"],
+                )
+
+            else:
+                raise ValueError(
+                    f"Unsupported serving type '{serving_type}' for target '{target_name}'"
+                )
 
             predictions[target_name] = PredictAllItemResponse(
                 model_name=result["model_name"],
